@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>✦ Таролог</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #BA7517;
+    --gold-light: #E8A030;
+    --gold-dim: rgba(186,117,23,0.15);
+    --bg: #0e0c0a;
+    --bg2: #161310;
+    --bg3: #1e1a16;
+    --border: rgba(186,117,23,0.2);
+    --border2: rgba(186,117,23,0.35);
+    --text: #e8ddd0;
+    --text2: #a09080;
+    --text3: #5a4f42;
+    --danger: #c0392b;
+    --danger-bg: rgba(192,57,43,0.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); font-family: 'Jost', sans-serif; font-weight: 300; min-height: 100vh; }
+  #app { max-width: 480px; margin: 0 auto; padding: 0 16px 60px; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes shimmer { 0%,100% { opacity:0.4; } 50% { opacity:1; } }
+  .fade { animation: fadeUp 0.4s ease forwards; }
+
+  /* Header */
+  .header { text-align: center; padding: 32px 0 24px; border-bottom: 0.5px solid var(--border); margin-bottom: 24px; }
+  .header-title { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 300; color: var(--gold); letter-spacing: 0.15em; }
+  .header-sub { font-size: 10px; letter-spacing: 0.25em; color: var(--text3); text-transform: uppercase; margin-top: 6px; }
+
+  /* Gold title */
+  .gold-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; color: var(--gold); letter-spacing: 0.05em; margin-bottom: 6px; }
+
+  /* Card */
+  .card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; }
+  .card-gold { border-color: var(--border2); }
+
+  /* Buttons */
+  .btn { background: var(--gold); color: #fff; border: none; border-radius: 8px; padding: 12px 24px; font-size: 13px; font-weight: 500; font-family: 'Jost', sans-serif; cursor: pointer; letter-spacing: 0.04em; transition: opacity 0.15s; }
+  .btn:hover { opacity: 0.9; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-out { background: none; border: 0.5px solid rgba(186,117,23,0.4); border-radius: 8px; padding: 10px 20px; font-size: 13px; color: var(--gold); font-family: 'Jost', sans-serif; cursor: pointer; transition: border-color 0.15s; }
+  .btn-out:hover { border-color: var(--gold); }
+  .btn-full { width: 100%; }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+
+  /* Back */
+  .back { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 13px; font-family: 'Jost', sans-serif; padding: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 6px; }
+
+  /* Input / textarea */
+  .inp { width: 100%; border-radius: 8px; padding: 10px 14px; font-size: 13px; border: 0.5px solid rgba(255,255,255,0.1); background: var(--bg3); color: var(--text); font-family: 'Jost', sans-serif; outline: none; }
+  .inp:focus { border-color: var(--border2); }
+  textarea.inp { resize: vertical; line-height: 1.6; min-height: 80px; }
+  .inp-label { font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; display: block; }
+
+  /* Toggle */
+  .toggle { display: flex; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 8px; padding: 3px; width: fit-content; }
+  .toggle-btn { padding: 5px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 500; font-family: 'Jost', sans-serif; transition: all 0.15s; background: transparent; color: var(--text2); }
+  .toggle-btn.active { background: var(--gold); color: #fff; }
+
+  /* Schema item */
+  .schema-item { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: flex-start; }
+  .schema-item:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .schema-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--text); margin-bottom: 4px; }
+  .schema-desc { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 8px; }
+  .schema-meta { font-size: 11px; color: var(--gold); }
+  .schema-btns { display: flex; gap: 2px; margin-left: 8px; }
+  .icon-btn { background: none; border: none; cursor: pointer; color: var(--text3); padding: 4px 7px; font-size: 16px; transition: color 0.15s; }
+  .icon-btn:hover { color: var(--text2); }
+
+  /* Photo upload */
+  .upload-zone { display: block; background: var(--bg2); border-radius: 12px; padding: 36px 20px; text-align: center; cursor: pointer; margin-bottom: 16px; position: relative; overflow: hidden; border: 1px dashed var(--border); }
+  .upload-zone:hover { border-color: var(--border2); }
+  .upload-icon { font-size: 40px; margin-bottom: 12px; }
+  .upload-title { font-size: 15px; font-weight: 400; color: var(--text); margin-bottom: 4px; }
+  .upload-sub { font-size: 12px; color: var(--text3); }
+  .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+  .upload-preview { text-align: center; margin-bottom: 16px; }
+  .upload-preview img { max-width: 100%; max-height: 300px; border-radius: 8px; object-fit: contain; display: block; margin: 0 auto 12px; }
+
+  /* Position card */
+  .pos-num { font-size: 10px; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 3px; }
+  .pos-name { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--text); margin-bottom: 4px; }
+  .pos-desc { font-size: 12px; color: var(--text3); line-height: 1.5; margin-bottom: 12px; }
+  select.inp { cursor: pointer; }
+  select.inp option, select.inp optgroup { background: #1e1a16; }
+
+  /* Tags */
+  .tag { background: var(--bg2); border: 0.5px solid var(--border2); border-radius: 20px; padding: 3px 12px; font-size: 12px; color: var(--gold); display: inline-block; margin: 3px; }
+
+  /* Reading */
+  .reading-text { font-size: 14px; line-height: 1.9; color: var(--text); white-space: pre-wrap; }
+  .seamless-text { font-size: 14px; line-height: 1.95; color: var(--text); font-style: italic; }
+  .section-label { font-size: 10px; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 14px; }
+
+  /* Spinner */
+  .spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 40px 0; }
+  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .spinner-msg { font-size: 13px; color: var(--text2); }
+
+  /* Error */
+  .err { background: var(--danger-bg); border: 0.5px solid var(--danger); border-radius: 8px; padding: 10px 14px; color: #e74c3c; font-size: 13px; margin-bottom: 16px; }
+
+  /* Settings */
+  .settings-btn { position: fixed; bottom: 20px; right: 20px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 50%; width: 44px; height: 44px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text2); }
+  .settings-btn:hover { border-color: var(--border2); }
+
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal { background: var(--bg2); border: 0.5px solid var(--border2); border-radius: 16px; padding: 28px; width: 100%; max-width: 400px; }
+  .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gold); margin-bottom: 20px; }
+
+  /* Divider */
+  .divider { text-align: center; margin: 12px 0; font-size: 12px; color: var(--text3); }
+
+  /* Row */
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 0.5px solid var(--border); }
+  .row:last-child { border-bottom: none; }
+  .row-label { font-size: 12px; color: var(--text2); }
+  .row-value { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--gold); }
+
+  /* Method tabs */
+  .method-tabs { display: flex; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 8px; padding: 3px; margin-bottom: 20px; width: fit-content; }
+
+  /* Small gold text */
+  .gold-sm { font-size: 10px; color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+
+  @media (max-width: 400px) {
+    .gold-title { font-size: 20px; }
+    .header-title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<button class="settings-btn" onclick="openSettings()" title="Настройки">⚙️</button>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settings-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Настройки</div>
+    <label class="inp-label">Grok API ключ</label>
+    <input class="inp" type="password" id="api-key-input" placeholder="gsk_..." style="margin-bottom:20px">
+    <label class="inp-label">Модель</label>
+    <select class="inp" id="model-input" style="margin-bottom:24px">
+      <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout (vision + текст, рекомендуется)</option>
+      <option value="llama-3.3-70b-versatile">Llama 3.3 70B (только текст)</option>
+      <option value="llama3-70b-8192">Llama 3 70B (только текст)</option>
+    </select>
+    <div class="btn-row">
+      <button class="btn" onclick="saveSettings()">Сохранить</button>
+      <button class="btn-out" onclick="closeSettings()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+const MAJOR = ["Шут","Маг","Верховная Жрица","Императрица","Император","Иерофант","Влюблённые","Колесница","Сила","Отшельник","Колесо Фортуны","Справедливость","Повешенный","Смерть","Умеренность","Дьявол","Башня","Звезда","Луна","Солнце","Суд","Мир"];
+const MAJOR_SET = new Set(MAJOR);
+const NUMS = ["Туз","Двойка","Тройка","Четвёрка","Пятёрка","Шестёрка","Семёрка","Восьмёрка","Девятка","Десятка","Паж","Рыцарь","Королева","Король"];
+const SUITS = { масти: ["Жезлов","Кубков","Мечей","Пентаклей"], стихии: ["Огня","Воды","Воздуха","Земли"] };
+const getCards = m => [...MAJOR, ...SUITS[m].flatMap(s => NUMS.map(n => n+" "+s))];
+
+const DEFAULT_SCHEMAS = [
+  { id:"intimniy_kod_mini", name:"Интимный код (мини)", card_count:4,
+    description:"Упрощённая версия — базовый взгляд на ориентацию и поведение в близости.",
+    positions:[
+      {id:1,name:"Вектор притяжения",description:"К кому направлено желание на глубинном уровне. Короли/Рыцари → мужская энергия, Королевы/Пажи → женская."},
+      {id:2,name:"Осознанные предпочтения",description:"То, что человек признаёт сам. Совпадает с позицией 1 — ориентация принята. Нет — конфликт."},
+      {id:3,name:"Подавленные желания",description:"То, что не реализуется или не признаётся. Часто указывает на второй полюс."},
+      {id:4,name:"Поведение в близости",description:"Роль и динамика: доминирование, подчинение, равенство, игра."}
+    ],
+    interpretation_keys:{orientation_reading:"Ориентация считывается из связки позиций 1+2+3",special_cards:{"Дьявол":"Сильная сексуальность, табуированные желания","Луна":"Скрытая ориентация или неопределённость","Влюблённые":"Выбор между двумя типами притяжения"}}
+  },
+  { id:"intimniy_kod_full", name:"Интимный код (полный)", card_count:7,
+    description:"Полный анализ сексуальной энергии, ориентации, блоков и реализации.",
+    positions:[
+      {id:1,name:"Базовая сексуальная энергия",description:"Как человек переживает желание. Огонь/Жезлы=страсть, Вода/Кубки=эмоции, Воздух/Мечи=контроль, Земля/Пентакли=телесность."},
+      {id:2,name:"Вектор притяжения",description:"К кому направлено желание на глубинном уровне. Короли/Рыцари → мужская энергия, Королевы/Пажи → женская."},
+      {id:3,name:"Осознанные предпочтения",description:"То, что признаётся сам. Совпадает с позицией 2 — принято. Нет — конфликт."},
+      {id:4,name:"Подавленные желания",description:"То, что не реализуется. Часто указывает на второй полюс."},
+      {id:5,name:"Поведение в близости",description:"Роль и динамика: доминирование, подчинение, равенство."},
+      {id:6,name:"Ограничения и блоки",description:"Социальные установки, страхи, запреты."},
+      {id:7,name:"Реализация в реальности",description:"Как это проявляется фактически — не фантазии, а действия."}
+    ],
+    interpretation_keys:{orientation_reading:"Ориентация считывается из связки позиций 2+3+4"}
+  },
+  { id:"razgovor_s_tenyu", name:"Разговор с тенью", card_count:6,
+    description:"Расклад для работы с тёмной или непринятой частью себя.",
+    positions:[
+      {id:1,name:"Моя тёмная или непринятая часть",description:"Какая именно часть личности подавлена или не принята."},
+      {id:2,name:"При каких обстоятельствах она родилась?",description:"Истоки и условия возникновения этой части."},
+      {id:3,name:"Ресурс тёмной части",description:"Что ценного и сильного скрыто в этой части."},
+      {id:4,name:"Вторичная выгода от непринятия",description:"Какую пользу неосознанно получает, отвергая эту часть."},
+      {id:5,name:"Как раскрыть эту часть?",description:"Путь к интеграции и принятию."},
+      {id:6,name:"Совет на настоящий момент",description:"Практическая рекомендация прямо сейчас."}
+    ]
+  },
+  { id:"vnutrenniy_svet", name:"Внутренний свет (Lumos!)", card_count:4,
+    description:"Расклад про внутренний свет — что светит, что ищете снаружи, что мешает и как преодолеть.",
+    positions:[
+      {id:1,name:"Как вы светитесь сейчас?",description:"Нечто сильное и яркое внутри — актуальный внутренний ресурс."},
+      {id:2,name:"Какой свет вы ищете вовне?",description:"Что ищете в других людях или обстоятельствах."},
+      {id:3,name:"Мутное стекло",description:"Что мешает пропускать свет и светить самому."},
+      {id:4,name:"Как очистить стекло?",description:"Как работать с препятствием."}
+    ]
+  },
+  { id:"istochnik_energii", name:"Источник энергии", card_count:4,
+    description:"Расклад про энергию — где искать, что питает, что даёт силы и на что она способна.",
+    positions:[
+      {id:1,name:"Импульс",description:"Как включить энергию? Где искать искру?"},
+      {id:2,name:"Глубинные источники",description:"Что из прошлого опыта поможет сохранить и увеличить энергию?"},
+      {id:3,name:"Новые источники",description:"Где ещё есть силы и свет?"},
+      {id:4,name:"Сила",description:"На что способна полученная энергия?"}
+    ]
+  }
+];
+
+let state = {
+  view: 'home',
+  cardMode: 'стихии',
+  schemas: [],
+  schema: null,
+  photoB64: null,
+  photoMime: 'image/jpeg',
+  recognized: [],
+  mapping: {},
+  question: '',
+  reading: '',
+  seamless: '',
+  loading: false,
+  loadMsg: '',
+  seamlessLoading: false,
+  err: '',
+  // add schema
+  addMethod: 'photo',
+  schemaPhotoB64: null,
+  schemaPhotoMime: 'image/jpeg',
+  schemaText: '',
+  parsedSchema: null,
+  parseLoading: false,
+  // edit schema
+  editSchema: null,
+};
+
+function getApiKey() { return localStorage.getItem('groq_api_key') || ''; }
+function getModel() { return localStorage.getItem('groq_model') || 'meta-llama/llama-4-scout-17b-16e-instruct'; }
+
+function openSettings() {
+  document.getElementById('api-key-input').value = getApiKey();
+  document.getElementById('model-input').value = getModel();
+  document.getElementById('settings-modal').style.display = 'flex';
+}
+function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+function saveSettings() {
+  localStorage.setItem('groq_api_key', document.getElementById('api-key-input').value.trim());
+  localStorage.setItem('groq_model', document.getElementById('model-input').value);
+  closeSettings();
+  render();
+}
+
+// ── API ───────────────────────────────────────────────────────────────────
+async function grokApi(messages, maxTokens, visionModel) {
+  const key = getApiKey();
+  if (!key) throw new Error('API ключ не задан. Нажмите ⚙️ для настройки.');
+  const model = visionModel ? 'meta-llama/llama-4-scout-17b-16e-instruct' : getModel();
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+    body: JSON.stringify({ model, max_tokens: maxTokens || 1000, messages })
+  });
+  const d = await resp.json();
+  if (d.error) throw new Error(d.error.message || 'Ошибка API');
+  return d.choices[0].message.content;
+}
+
+// ── Storage ───────────────────────────────────────────────────────────────
+function loadSchemas() {
+  try {
+    const s = localStorage.getItem('tarot_schemas');
+    if (s) { state.schemas = JSON.parse(s); return; }
+  } catch(e) {}
+  state.schemas = JSON.parse(JSON.stringify(DEFAULT_SCHEMAS));
+  saveSchemas();
+}
+function saveSchemas() {
+  localStorage.setItem('tarot_schemas', JSON.stringify(state.schemas));
+}
+function loadMode() {
+  state.cardMode = localStorage.getItem('tarot_card_mode') || 'стихии';
+}
+function saveMode() {
+  localStorage.setItem('tarot_card_mode', state.cardMode);
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────
+function setView(v) { state.view = v; state.err = ''; render(); }
+
+function setMode(m) { state.cardMode = m; saveMode(); render(); }
+
+function selectSchema(s) {
+  state.schema = s; state.photoB64 = null; state.recognized = []; state.err = '';
+  setView('upload');
+}
+
+function onPhotoChange(e) {
+  const file = e.target.files[0]; if (!file) return;
+  state.photoMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = ev => { state.photoB64 = ev.target.result.split(',')[1]; render(); };
+  reader.readAsDataURL(file);
+}
+
+function onSchemaPhotoChange(e) {
+  const file = e.target.files[0]; if (!file) return;
+  state.schemaPhotoMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = ev => { state.schemaPhotoB64 = ev.target.result.split(',')[1]; render(); };
+  reader.readAsDataURL(file);
+}
+
+async function doRecognize() {
+  state.loading = true; state.loadMsg = 'Распознаю карты на фото...'; state.err = ''; render();
+  const hint = state.cardMode === 'стихии'
+    ? 'Масти в этой колоде — стихии: Огня, Воды, Воздуха, Земли. Если на картах есть подписи — читай их точно.'
+    : 'Масти стандартные: Жезлов, Кубков, Мечей, Пентаклей.';
+  try {
+    const text = await grokApi([{role:'user',content:[
+      {type:'image_url',image_url:{url:'data:'+state.photoMime+';base64,'+state.photoB64}},
+      {type:'text',text:'Посмотри на это фото расклада Таро. Перечисли все видимые карты. '+hint+' Отвечай ТОЛЬКО JSON массивом строк на русском. Ничего кроме JSON.'}
+    ]}], 500, true);
+    const cards = JSON.parse(text.replace(/```json|```/g,'').trim());
+    state.recognized = Array.isArray(cards) ? cards : [];
+    const m = {}; state.schema.positions.forEach(p => { m[p.id] = ''; });
+    state.mapping = m;
+    setView('mapping');
+  } catch(e) { state.err = e.message || 'Не удалось распознать карты.'; }
+  state.loading = false; render();
+}
+
+function skipToManual() {
+  const m = {}; state.schema.positions.forEach(p => { m[p.id] = ''; });
+  state.mapping = m; state.recognized = [];
+  setView('mapping');
+}
+
+async function doReading() {
+  state.loading = true; state.loadMsg = 'Читаю расклад...'; state.err = ''; state.seamless = ''; render();
+  const allMapped = Object.values(state.mapping).filter(Boolean);
+  const suits = SUITS[state.cardMode];
+  const majorCount = allMapped.filter(c => MAJOR_SET.has(c)).length;
+  const suitText = suits.map(s => s+': '+allMapped.filter(c=>c.includes(s)).length).join(', ');
+  const posText = state.schema.positions.map((p,i) => {
+    const neighbors = state.schema.positions.filter((_,j)=>j!==i).map(np=>'«'+np.name+'»: '+(state.mapping[np.id]||'не задана')).join(', ');
+    return 'Позиция '+p.id+' «'+p.name+'»\nКарта: '+(state.mapping[p.id]||'не задана')+'\nЧто спрашивает позиция: '+p.description+'\nОстальные карты расклада: '+neighbors;
+  }).join('\n\n');
+  const modeNote = state.cardMode==='стихии' ? 'Колода использует стихии: Огонь=воля/страсть, Вода=эмоции/интуиция, Воздух=разум/коммуникация, Земля=тело/материя.' : 'Колода Райдер-Уэйт.';
+  const keys = state.schema.interpretation_keys ? '\nКлючи интерпретации:\n'+JSON.stringify(state.schema.interpretation_keys,null,2) : '';
+  const prompt = 'Ты — глубокий психологически-ориентированный таролог.\n\nСхема: «'+state.schema.name+'»\n'+state.schema.description+'\n'+(state.question?'Запрос кверента: '+state.question:'')+'\n'+modeNote+'\n\nКАРТЫ РАСКЛАДА:\n'+posText+'\n\nСтарших Арканов: '+majorCount+' из '+allMapped.length+'. Стихии/масти: '+suitText+'.\n'+keys+'\n\nИНСТРУКЦИЯ:\nРазбери КАЖДУЮ позицию расклада. Для каждой позиции напиши один связный абзац, в котором органично соединены:\n— что несёт эта карта по своей природе\n— что происходит когда эта карта оказывается в этой позиции (пересечение карты и вопроса позиции)\n— как соседние карты влияют на прочтение: усиливают, уточняют, создают дополнительный смысл\n\nНе разбивай на подпункты — один цельный абзац на позицию.\n\nЗатем:\n— Общий тон расклада: преобладающие стихии/масти, соотношение арканов\n— Итоговый вывод с учётом всех связей\n'+(state.question?'— Ответ на запрос кверента':'')+'\n\nИспользуй вероятностный язык. Пиши по-русски, глубоко, конкретно. Разбери ВСЕ позиции.';
+  try {
+    const text = await grokApi([{role:'user',content:prompt}], 3000, false);
+    state.reading = text; setView('reading');
+  } catch(e) { state.err = e.message || 'Ошибка при получении интерпретации.'; }
+  state.loading = false; render();
+}
+
+async function doSeamless() {
+  state.seamlessLoading = true; state.err = ''; render();
+  const prompt = 'Ты — психолог-аналитик. У тебя есть подробный разбор по позициям:\n\n---\n'+state.reading+'\n---\n\nНа основе этого анализа напиши единый связный психологический текст — портрет человека или ситуации.\n\nСТРОГИЕ ПРАВИЛА:\n— НИКОГДА не упоминай названия карт, позиций, мастей, стихий, схем, раскладов, Таро\n— Только психологические наблюдения и выводы — как будто ты психолог, который давно знает этого человека\n— Единый поток текста без заголовков и списков\n— Сохрани все смысловые выводы, включая взаимовлияние аспектов\n— Вероятностный язык: скорее, наиболее вероятно, возможно\n'+(state.question?'— Ответь на запрос: '+state.question:'')+'\n\nОбъём: 4–6 связных абзацев. По-русски.';
+  try {
+    const text = await grokApi([{role:'user',content:prompt}], 2000, false);
+    state.seamless = text; render();
+  } catch(e) { state.err = e.message || 'Ошибка при получении полной трактовки.'; }
+  state.seamlessLoading = false; render();
+}
+
+function reset() {
+  state.schema = null; state.photoB64 = null; state.recognized = []; state.mapping = {};
+  state.question = ''; state.reading = ''; state.seamless = ''; state.err = '';
+  setView('home');
+}
+
+// Add/edit schema
+async function parseSchemaFromPhoto() {
+  if (!state.schemaPhotoB64) return;
+  state.parseLoading = true; state.err = ''; state.parsedSchema = null; render();
+  try {
+    const text = await grokApi([{role:'user',content:[
+      {type:'image_url',image_url:{url:'data:'+state.schemaPhotoMime+';base64,'+state.schemaPhotoB64}},
+      {type:'text',text:'Это фото схемы расклада Таро. Извлеки название, описание и все позиции. Отвечай ТОЛЬКО JSON:\n{"name":"...","description":"...","positions":[{"id":1,"name":"...","description":"..."}],"interpretation_keys":null}'}
+    ]}], 1000, true);
+    state.parsedSchema = JSON.parse(text.replace(/```json|```/g,'').trim());
+  } catch(e) { state.err = 'Не удалось распознать схему. Попробуйте текстовый способ.'; }
+  state.parseLoading = false; render();
+}
+
+async function parseSchemaFromText() {
+  const txt = document.getElementById('schema-text-input').value.trim();
+  if (!txt) return;
+  state.schemaText = txt;
+  state.parseLoading = true; state.err = ''; state.parsedSchema = null; render();
+  const prompt = 'Это описание расклада Таро. Извлеки структурированные данные.\n\nТекст:\n---\n'+txt+'\n---\n\nОтвечай ТОЛЬКО JSON:\n{"name":"...","description":"...","positions":[{"id":1,"name":"...","description":"..."}],"interpretation_keys":{"patterns":"...","special_cards":{"Название карты":"Значение"}}}\n\nЕсли нет рекомендаций по трактовке — поставь interpretation_keys: null. Ничего кроме JSON.';
+  try {
+    const text = await grokApi([{role:'user',content:prompt}], 2000, false);
+    state.parsedSchema = JSON.parse(text.replace(/```json|```/g,'').trim());
+  } catch(e) { state.err = 'Не удалось разобрать текст.'; }
+  state.parseLoading = false; render();
+}
+
+function saveNewSchema() {
+  const s = state.parsedSchema;
+  if (!s || !s.name || !s.positions || !s.positions.length) { state.err = 'Сначала распознайте схему.'; render(); return; }
+  const ns = {id:'schema_'+Date.now(), name:s.name, description:s.description||'', card_count:s.positions.length, positions:s.positions, interpretation_keys:s.interpretation_keys||null};
+  state.schemas.push(ns); saveSchemas();
+  state.schemaPhotoB64 = null; state.schemaText = ''; state.parsedSchema = null; state.err = '';
+  setView('home');
+}
+
+function openEdit(s, e) {
+  e.stopPropagation();
+  state.editSchema = JSON.parse(JSON.stringify(s));
+  state.err = ''; setView('edit-schema');
+}
+
+function saveEditSchema() {
+  const es = state.editSchema;
+  if (!es.name.trim() || !es.positions.length) { state.err = 'Название и хотя бы одна позиция обязательны.'; render(); return; }
+  state.schemas = state.schemas.map(s => s.id === es.id ? {...es, card_count:es.positions.length} : s);
+  saveSchemas(); state.editSchema = null; state.err = ''; setView('home');
+}
+
+function deleteSchema(id, e) {
+  e.stopPropagation();
+  if (!confirm('Удалить эту схему?')) return;
+  state.schemas = state.schemas.filter(s => s.id !== id);
+  saveSchemas(); render();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById('app');
+  const hasKey = !!getApiKey();
+
+  if (state.view === 'home') {
+    const allCards = getCards(state.cardMode);
+    app.innerHTML = `<div class="fade">
+      <div class="header">
+        <div class="header-title">✦ Таролог ✦</div>
+        <div class="header-sub">AI · Интерпретация раскладов</div>
+      </div>
+      ${!hasKey ? '<div class="err">⚙️ Введите Grok API ключ в настройках для начала работы</div>' : ''}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div class="toggle">
+          <button class="toggle-btn ${state.cardMode==='масти'?'active':''}" onclick="setMode('масти')">🂠 Масти</button>
+          <button class="toggle-btn ${state.cardMode==='стихии'?'active':''}" onclick="setMode('стихии')">✦ Стихии</button>
+        </div>
+        <button class="btn-out" onclick="startAddSchema()">+ Добавить схему</button>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px">
+        Режим: <span style="color:var(--gold)">${state.cardMode==='стихии'?'Стихии (Огонь, Вода, Воздух, Земля)':'Масти (Райдер-Уэйт)'}</span>
+      </div>
+      ${state.schemas.map(s => `
+        <div class="schema-item" onclick="selectSchema(${JSON.stringify(s).replace(/"/g,'&quot;')})">
+          <div style="flex:1">
+            <div class="schema-name">${s.name}</div>
+            <div class="schema-desc">${s.description}</div>
+            <div class="schema-meta">✦ ${s.positions.length} позиций</div>
+          </div>
+          <div class="schema-btns">
+            <button class="icon-btn" onclick="openEdit(${JSON.stringify(s).replace(/"/g,'&quot;')}, event)" title="Редактировать">✏️</button>
+            ${!DEFAULT_SCHEMAS.find(d=>d.id===s.id) ? `<button class="icon-btn" onclick="deleteSchema('${s.id}', event)" title="Удалить">🗑</button>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  else if (state.view === 'upload') {
+    app.innerHTML = `<div class="fade">
+      <button class="back" onclick="setView('home')">← Назад</button>
+      <div class="gold-title">${state.schema.name}</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <span style="font-size:13px;color:var(--text3)">${state.schema.positions.length} позиций</span>
+        <span style="color:var(--text3)">·</span>
+        <div class="toggle">
+          <button class="toggle-btn ${state.cardMode==='масти'?'active':''}" onclick="setMode('масти')">🂠 Масти</button>
+          <button class="toggle-btn ${state.cardMode==='стихии'?'active':''}" onclick="setMode('стихии')">✦ Стихии</button>
+        </div>
+      </div>
+      ${state.photoB64 ? `
+        <div class="upload-preview">
+          <img src="data:${state.photoMime};base64,${state.photoB64}" alt="расклад">
+          <label class="btn-out" style="display:inline-block;cursor:pointer">
+            📷 Заменить фото
+            <input type="file" accept="image/*" onchange="onPhotoChange(event)" style="display:none">
+          </label>
+        </div>
+      ` : `
+        <label class="upload-zone">
+          <div class="upload-icon">📷</div>
+          <div class="upload-title">Загрузить фото расклада</div>
+          <div class="upload-sub">JPG · PNG · HEIC</div>
+          <input type="file" accept="image/*" onchange="onPhotoChange(event)">
+        </label>
+        <div class="divider">или</div>
+        <button class="btn-out btn-full" style="padding:14px;font-size:14px" onclick="skipToManual()">
+          Выбрать карты вручную →
+        </button>
+      `}
+      ${errHtml()}
+      ${state.loading ? spinnerHtml() : state.photoB64 ? `<button class="btn" onclick="doRecognize()">Распознать карты →</button>` : ''}
+    </div>`;
+  }
+
+  else if (state.view === 'mapping') {
+    const allCards = getCards(state.cardMode);
+    app.innerHTML = `<div class="fade">
+      <button class="back" onclick="setView('upload')">← Назад</button>
+      <div class="gold-title">${state.schema.name}</div>
+      ${state.recognized.length > 0 ? `
+        <div style="margin-bottom:20px">
+          <div class="gold-sm">Распознано на фото</div>
+          <div>${state.recognized.map(c=>`<span class="tag">${c}</span>`).join('')}</div>
+        </div>
+      ` : ''}
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Сопоставьте карты с позициями схемы</div>
+      ${state.schema.positions.map(p => `
+        <div class="card" style="margin-bottom:10px">
+          <div class="pos-num">Позиция ${p.id}</div>
+          <div class="pos-name">${p.name}</div>
+          <div class="pos-desc">${p.description}</div>
+          <select class="inp" onchange="setMapping(${p.id}, this.value)">
+            <option value="">— Выберите карту —</option>
+            ${state.recognized.length > 0 ? `
+              <optgroup label="Распознанные карты">
+                ${state.recognized.map(c=>`<option value="${c}" ${state.mapping[p.id]===c?'selected':''}>${c}</option>`).join('')}
+              </optgroup>
+              <optgroup label="Все карты (${allCards.length})">
+                ${allCards.filter(c=>!state.recognized.includes(c)).map(c=>`<option value="${c}" ${state.mapping[p.id]===c?'selected':''}>${c}</option>`).join('')}
+              </optgroup>
+            ` : allCards.map(c=>`<option value="${c}" ${state.mapping[p.id]===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+      `).join('')}
+      ${errHtml()}
+      <button class="btn" style="margin-top:8px" onclick="setView('question')">Далее →</button>
+    </div>`;
+  }
+
+  else if (state.view === 'question') {
+    app.innerHTML = `<div class="fade">
+      <button class="back" onclick="setView('mapping')">← Назад</button>
+      <div class="gold-title">${state.schema.name}</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Добавьте запрос (необязательно)</div>
+      <div class="card" style="margin-bottom:10px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Уточни вопрос или контекст для более направленной интерпретации</div>
+        <textarea class="inp" id="question-input" placeholder="Например: что происходит в моих отношениях с партнёром?" style="min-height:90px">${state.question}</textarea>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="gold-sm">Карты расклада</div>
+        ${state.schema.positions.map(p=>`
+          <div class="row">
+            <span class="row-label">${p.name}</span>
+            <span class="row-value" style="${!state.mapping[p.id]?'color:var(--text3)':''}">${state.mapping[p.id]||'—'}</span>
+          </div>
+        `).join('')}
+      </div>
+      ${errHtml()}
+      ${state.loading ? spinnerHtml() : `<button class="btn" onclick="saveQuestionAndRead()">✦ Читать расклад</button>`}
+    </div>`;
+  }
+
+  else if (state.view === 'reading') {
+    app.innerHTML = `<div class="fade">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--gold);letter-spacing:0.08em">${state.schema.name}</div>
+        ${state.question ? `<div style="font-size:13px;font-style:italic;color:var(--text2);margin-top:6px">«${state.question}»</div>` : ''}
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="gold-sm">Карты расклада</div>
+        ${state.schema.positions.map(p=>`
+          <div class="row">
+            <span class="row-label">${p.name}</span>
+            <span class="row-value">${state.mapping[p.id]||'—'}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="card card-gold" style="padding:20px 22px;margin-bottom:16px">
+        <div class="section-label">Трактовка по позициям</div>
+        <div class="reading-text">${state.reading}</div>
+      </div>
+      ${!state.seamless && !state.seamlessLoading ? `
+        <div class="card" style="margin-bottom:16px;border-color:rgba(186,117,23,0.1)">
+          <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Хотите получить единый психологический портрет без разбивки по картам?</div>
+          <button class="btn" onclick="doSeamless()">✦ Полная трактовка</button>
+        </div>
+      ` : ''}
+      ${state.seamlessLoading ? spinnerHtml('Синтезирую полную трактовку...') : ''}
+      ${state.seamless ? `
+        <div class="card" style="border-color:var(--border2);padding:20px 22px;margin-bottom:16px">
+          <div class="section-label">Полная трактовка</div>
+          <div class="seamless-text">${state.seamless}</div>
+        </div>
+      ` : ''}
+      ${errHtml()}
+      <div class="btn-row">
+        <button class="btn" onclick="reset()">Новый расклад</button>
+        <button class="btn-out" onclick="setView('question')">← Изменить запрос</button>
+      </div>
+    </div>`;
+  }
+
+  else if (state.view === 'add-schema') {
+    app.innerHTML = `<div class="fade">
+      <button class="back" onclick="resetAddSchema()">← Назад</button>
+      <div class="gold-title">Новая схема расклада</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Выберите способ добавления</div>
+      <div class="method-tabs" style="margin-bottom:20px">
+        <button class="toggle-btn ${state.addMethod==='photo'?'active':''}" onclick="setAddMethod('photo')">📷 Фото схемы</button>
+        <button class="toggle-btn ${state.addMethod==='text'?'active':''}" onclick="setAddMethod('text')">📝 Текст описания</button>
+      </div>
+      ${!state.parsedSchema ? `
+        ${state.addMethod==='photo' ? `
+          <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Загрузите фото схемы — ИИ сам распознает название и позиции</div>
+          ${state.schemaPhotoB64 ? `
+            <div class="upload-preview">
+              <img src="data:${state.schemaPhotoMime};base64,${state.schemaPhotoB64}" alt="схема">
+              <label class="btn-out" style="display:inline-block;cursor:pointer">
+                📷 Заменить
+                <input type="file" accept="image/*" onchange="onSchemaPhotoChange(event)" style="display:none">
+              </label>
+            </div>
+          ` : `
+            <label class="upload-zone" style="margin-bottom:16px">
+              <div class="upload-icon">📷</div>
+              <div class="upload-title">Загрузить фото схемы</div>
+              <input type="file" accept="image/*" onchange="onSchemaPhotoChange(event)">
+            </label>
+          `}
+          ${state.parseLoading ? spinnerHtml('Распознаю схему...') : state.schemaPhotoB64 ? `<button class="btn" onclick="parseSchemaFromPhoto()">Распознать схему →</button>` : ''}
+        ` : `
+          <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Вставьте текст с описанием расклада — ИИ сам разберёт структуру и рекомендации</div>
+          <textarea class="inp" id="schema-text-input" placeholder="Вставьте описание расклада: название, для чего, позиции, рекомендации по трактовке..." style="min-height:200px;margin-bottom:16px">${state.schemaText}</textarea>
+          ${state.parseLoading ? spinnerHtml('Разбираю текст...') : `<button class="btn" onclick="parseSchemaFromText()">Разобрать текст →</button>`}
+        `}
+      ` : `
+        <div class="gold-sm" style="margin-bottom:12px">Распознанная схема — проверьте</div>
+        <div class="card card-gold" style="margin-bottom:16px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--text);margin-bottom:6px">${state.parsedSchema.name}</div>
+          ${state.parsedSchema.description ? `<div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5">${state.parsedSchema.description}</div>` : ''}
+          ${(state.parsedSchema.positions||[]).map(p=>`
+            <div style="padding:8px 0;border-bottom:0.5px solid var(--border)">
+              <div style="font-size:12px;color:var(--gold);margin-bottom:2px">Позиция ${p.id} · ${p.name}</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.5">${p.description}</div>
+            </div>
+          `).join('')}
+          ${state.parsedSchema.interpretation_keys ? `
+            <div style="margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border2)">
+              <div class="gold-sm">Рекомендации по трактовке</div>
+              ${state.parsedSchema.interpretation_keys.patterns ? `<div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px">${state.parsedSchema.interpretation_keys.patterns}</div>` : ''}
+              ${state.parsedSchema.interpretation_keys.special_cards && Object.keys(state.parsedSchema.interpretation_keys.special_cards).length ? `
+                <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Особые карты:</div>
+                ${Object.entries(state.parsedSchema.interpretation_keys.special_cards).map(([k,v])=>`
+                  <div style="font-size:12px;color:var(--text2);margin-bottom:4px"><span style="color:var(--gold)">${k}</span> — ${v}</div>
+                `).join('')}
+              ` : ''}
+            </div>
+          ` : ''}
+        </div>
+        ${errHtml()}
+        <div class="btn-row">
+          <button class="btn" onclick="saveNewSchema()">✦ Сохранить схему</button>
+          <button class="btn-out" onclick="state.parsedSchema=null;render()">← Попробовать снова</button>
+        </div>
+      `}
+      ${!state.parsedSchema ? errHtml() : ''}
+    </div>`;
+  }
+
+  else if (state.view === 'edit-schema' && state.editSchema) {
+    const es = state.editSchema;
+    app.innerHTML = `<div class="fade">
+      <button class="back" onclick="state.editSchema=null;setView('home')">← Назад</button>
+      <div class="gold-title">Редактирование схемы</div>
+      <div style="margin-bottom:20px">
+        <label class="inp-label">Название *</label>
+        <input class="inp" value="${es.name}" oninput="state.editSchema.name=this.value" style="margin-bottom:12px">
+        <label class="inp-label">Описание</label>
+        <textarea class="inp" oninput="state.editSchema.description=this.value" style="min-height:70px">${es.description||''}</textarea>
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:12px">Позиции</div>
+      ${es.positions.map((pos,i)=>`
+        <div class="card" style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="pos-num">Позиция ${pos.id}</div>
+            ${es.positions.length > 1 ? `<button class="icon-btn" onclick="editRemovePos(${i})">🗑</button>` : ''}
+          </div>
+          <input class="inp" value="${pos.name}" oninput="editUpdatePos(${i},'name',this.value)" placeholder="Название *" style="margin-bottom:8px">
+          <textarea class="inp" oninput="editUpdatePos(${i},'description',this.value)" placeholder="Описание" style="min-height:60px">${pos.description||''}</textarea>
+        </div>
+      `).join('')}
+      <button class="btn-out" style="margin-bottom:24px" onclick="editAddPos()">+ Добавить позицию</button>
+      ${es.interpretation_keys ? `
+        <div style="margin-bottom:24px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:12px">Рекомендации по трактовке</div>
+          <div class="card">
+            <label class="inp-label">Паттерны чтения</label>
+            <textarea class="inp" oninput="state.editSchema.interpretation_keys.patterns=this.value" style="min-height:100px;margin-bottom:12px">${es.interpretation_keys.patterns||''}</textarea>
+            ${es.interpretation_keys.special_cards && Object.keys(es.interpretation_keys.special_cards).length ? `
+              <label class="inp-label">Особые карты</label>
+              ${Object.entries(es.interpretation_keys.special_cards).map(([k,v])=>`
+                <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+                  <span style="font-size:12px;color:var(--gold);min-width:130px">${k}</span>
+                  <input class="inp" value="${v}" oninput="editUpdateSpecialCard('${k}',this.value)">
+                </div>
+              `).join('')}
+            ` : ''}
+          </div>
+        </div>
+      ` : ''}
+      ${errHtml()}
+      <div class="btn-row">
+        <button class="btn" onclick="saveEditSchema()">Сохранить изменения</button>
+        <button class="btn-out" onclick="state.editSchema=null;setView('home')">Отмена</button>
+      </div>
+    </div>`;
+  }
+}
+
+function errHtml() { return state.err ? `<div class="err">${state.err}</div>` : ''; }
+function spinnerHtml(msg) {
+  return `<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-msg">${msg||state.loadMsg}</div></div>`;
+}
+
+// ── Helper handlers ───────────────────────────────────────────────────────
+function setMapping(posId, val) { state.mapping[posId] = val; }
+function saveQuestionAndRead() {
+  const q = document.getElementById('question-input');
+  state.question = q ? q.value : '';
+  doReading();
+}
+function startAddSchema() {
+  state.addMethod = 'photo'; state.schemaPhotoB64 = null; state.schemaText = '';
+  state.parsedSchema = null; state.err = ''; setView('add-schema');
+}
+function resetAddSchema() {
+  state.schemaPhotoB64 = null; state.schemaText = ''; state.parsedSchema = null; state.err = '';
+  setView('home');
+}
+function setAddMethod(m) { state.addMethod = m; state.parsedSchema = null; state.err = ''; render(); }
+function editAddPos() {
+  state.editSchema.positions.push({id:state.editSchema.positions.length+1,name:'',description:''});
+  render();
+}
+function editRemovePos(i) {
+  state.editSchema.positions = state.editSchema.positions.filter((_,j)=>j!==i).map((p,j)=>({...p,id:j+1}));
+  render();
+}
+function editUpdatePos(i, field, val) { state.editSchema.positions[i][field] = val; }
+function editUpdateSpecialCard(key, val) { state.editSchema.interpretation_keys.special_cards[key] = val; }
+
+// ── Init ──────────────────────────────────────────────────────────────────
+loadSchemas(); loadMode(); render();
+</script>
+</body>
+</html>
